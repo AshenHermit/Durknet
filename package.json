@@ -1,0 +1,40 @@
+{
+  "name": "shop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "npm run pack && npm run startProd",
+    "startProd": "node index.js",
+    "pack": "webpack --mode production --config webpack.config.js",
+    "startDev": "npm run packDev && node index.js",
+    "packDev": "webpack --mode development --config webpack.config.js"
+  },
+  "dependencies": {
+    "@babel/cli": "^7.1.5",
+    "@babel/core": "^7.1.6",
+    "@babel/preset-env": "^7.1.6",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/register": "^7.0.0",
+    "babel-loader": "^8.0.4",
+    "babel-plugin-root-import": "^6.1.0",
+    "express": "^4.16.4",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "react-helmet": "^5.2.0",
+    "react-router": "^4.3.1",
+    "react-router-dom": "^4.3.1",
+    "webpack": "^4.26.1",
+    "webpack-cli": "^3.1.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blacktiger54/Durknet.git"
+  },
+  "author": "ashen hermit",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/blacktiger54/Durknet/issues"
+  },
+  "homepage": "https://github.com/blacktiger54/Durknet#readme"
+}
