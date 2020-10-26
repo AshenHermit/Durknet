@@ -13,7 +13,10 @@ export default function template(helmet, content = ''){
         <meta name="theme-color" content="#810051">
         <link rel="shortcut icon" href="/assets/logos/favicon.ico" type="image/x-icon">
         <link rel="icon" href="/assets/logos/favicon.ico" type="image/x-icon">
+
+        <link href="https://fonts.googleapis.com/css2?family=Ubuntu&display=swap" rel="stylesheet">
         <link rel="stylesheet" href="/assets/global.css">
+        
         </head>
         <body>
         <div class="content">
