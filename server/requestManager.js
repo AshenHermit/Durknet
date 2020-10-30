@@ -46,6 +46,10 @@ function createUser(data, db){
     return new User(data)
 }
 
+function getUserByToken(token, db, getIndex=false){
+    return db.users[getIndex ? "findIndex" : "find"](x => x.token == token)
+}
+
 function Product(data, userId){
     this.uid = -1
     this.title = data.title
@@ -227,7 +231,7 @@ export default function(app, jsonParser, db){
 
         var data = req.body
         
-        if(data.password == "001011"){
+        if(getUserByToken(data.token).username == "ashen_hermit"){
             saveDb(db,
                 // success
                 function(){
