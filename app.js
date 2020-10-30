@@ -32,6 +32,6 @@ loadDataBase(function(dbJson){
         console.log(`the app is running on ${HOSTNAME}:${PORT}`)
     })
 
-    stateRoutes(app)
     requestManager(app, jsonParser, db)
+    stateRoutes(app)
 })

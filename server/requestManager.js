@@ -203,36 +203,40 @@ function editProduct(data, db){
 function searchProducts(data, db){
     var list = []
     db.products.forEach(product => {
-        var matches = false
-        if(data.searchData.author && !matches){
-            if(new RegExp(data.searchData.author).test(product.author)){
-                list.push(product)
-                matches = true;
-            }
+        var matches = true
+
+        if(data.searchData.author){
+            matches = matches && new RegExp(data.searchData.author.toLowerCase()).test(product.author.toLowerCase())
         }
-        if(data.searchData.tags && !matches){
-            if(data.searchData.tags.split(" ").every(tag => product.tags.includes(tag))){
-                list.push(product)
-                matches = true;
-            }
+        if(data.searchData.tags){
+            matches = matches && data.searchData.tags.split(" ").every(tag => product.tags.includes(tag))
         }
-        if(data.searchData.title && !matches){
-            if(new RegExp(data.searchData.title).test(product.title)){
-                list.push(product)
-                matches = true;
-            }
+        if(data.searchData.title){
+            matches = matches && new RegExp(data.searchData.title.toLowerCase()).test(product.title.toLowerCase())
         }
-        if(data.searchData.description && !matches){
-            if(new RegExp(data.searchData.description).test(product.description)){
-                list.push(product)
-                matches = true;
-            }
+        if(data.searchData.description){
+            matches = matches && new RegExp(data.searchData.title).test(product.title)
+        }
+
+        if(matches){
+            list.push(product)
         }
     })
     return list
 }
 
 export default function(app, jsonParser, db){
+    
+    loadDb({accessToken: process.env.DBX_ACCESS_TOKEN},
+        // success
+        (function(newDb){
+            db = newDb
+        }).bind(db),
+        // error
+        function(){
+            console.log("error: unable to load database")
+        }
+    )
     
     app.post("/sign-up", jsonParser, (req, res)=>{
         if(!req.body) return res.sendStatus(400)
