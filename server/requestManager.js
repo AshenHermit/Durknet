@@ -82,6 +82,7 @@ function registerUser(data, db){
     if (typeof newUser == "object"){
         newUser.token = generateToken()
         db.users.push(newUser)
+        saveDb(db, ()=>{}, ()=>{})
     }
     
     return newUser
@@ -129,7 +130,7 @@ function loadDb(data, callback, errorCallback){
     })
 }
 
-function saveDb(data, db, callback, errorCallback){
+function saveDb(db, callback, errorCallback){
     var dbCopy = Object.assign({}, db)
 
     for(var i=0; i<dbCopy.users.length; i++){
@@ -146,7 +147,7 @@ function saveDb(data, db, callback, errorCallback){
     })
     */
     var dbx = new Dropbox({
-        accessToken:  data.accessToken, 
+        accessToken:  process.env.DBX_ACCESS_TOKEN, 
         fetch: fetch
     });
 
@@ -193,6 +194,7 @@ function editProduct(data, db){
             }else{
                 return "invalid operation"
             }
+            saveDb(db, ()=>{}, ()=>{})
             return false
         }
     }
@@ -301,7 +303,7 @@ export default function(app, jsonParser, db){
         var data = req.body
         
         if(getUserByToken(data.token, db).username == "ashen_hermit"){
-            saveDb({accessToken: process.env.DBX_ACCESS_TOKEN}, db,
+            saveDb(db,
                 // success
                 function(){
                     res.json({
