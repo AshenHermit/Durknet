@@ -1,1 +1,27 @@
-{"users":[{"name":"Test User","username":"test_user","password":"1234","token":""}]}
+{
+    "nextProductId": 1,
+    "users": [
+        {
+            "name": "Test User",
+            "username": "test_user",
+            "password": "1234",
+            "token": "",
+            "products": [
+                0
+            ]
+        }
+    ],
+    "products": [
+        {
+            "uid": 0,
+            "title": "начос",
+            "description": "возможен передоз",
+            "tags": [
+                "еда",
+                "наркотики"
+            ],
+            "image": "https://sun9-65.userapi.com/sT96xhw82Wz1I02XGUNh_QZrztasKqh-7qwMWA/L-MrmtwkOPM.jpg",
+            "author": "test_user"
+        }
+    ]
+}

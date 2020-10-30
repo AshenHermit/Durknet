@@ -1,3 +1,5 @@
+import { type } from "os";
+
 const fs = require("fs");
 
 function generateToken(){
@@ -13,17 +15,22 @@ function User(data){
     this.username = data.username
     this.password = data.password
     this.token = ""
+    this.products = []
 }
-
+//
 function createUser(data, db){
+    var cantContain = ["=", ";", ":", ",", "/", "="]
     if(data.name.length == 0){
         return "Please, enter the name"
     }
     else if(data.username.length < 4){
         return "username length must be equal or greater than 4 characters"
     }
-    else if(data.username.indexOf(" ") != -1 || data.username.indexOf("	") != -1){
+    else if(new RegExp([" ", "	"].join("|")).test(data.username)){
         return "username cant contain tabs and spaces"
+    }
+    else if(new RegExp(cantContain.join("|")).test(data.username)){
+        return "username cant contain " + cantContain.join(" ")
     }
     else if(data.password.length < 4){
         return "password length must be equal or greater than 4 characters"
@@ -37,6 +44,29 @@ function createUser(data, db){
     }
     
     return new User(data)
+}
+
+function Product(data, userId){
+    this.uid = -1
+    this.title = data.title
+    this.description = data.description
+    this.tags = data.tags.split(" ")
+    this.image = data.imageUrl
+    this.author = userId
+}
+function createProduct(data, userId){
+    if(data.title.length == 0){
+        return "Please, enter the title"
+    }else if(data.tags.length > 100){
+        return "too big tag data"
+    }
+    return new Product(data, userId)
+}
+function editProductObject(product, data){
+    product.title = data.title
+    product.description = data.description
+    product.tags = data.tags.split(" ")
+    product.image = data.imageUrl
 }
 
 function registerUser(data, db){
@@ -72,6 +102,88 @@ function userLogout(data, db){
         }
     }
     return null
+}
+
+function saveDb(db, callback, errorCallback){
+    var dbCopy = Object.assign({}, db)
+
+    for(var i=0; i<dbCopy.users.length; i++){
+        dbCopy.users[i].token = ""
+    }
+
+    fs.writeFile('./local/db.json', JSON.stringify(dbCopy, 0, 4), 'utf8', function (err) {
+        if(err){
+            errorCallback()
+            return(console.log(err))
+        }
+        callback()
+    })
+}
+
+function getProductByUid(uid, db, getIndex=false){
+    return db.products[getIndex ? "findIndex" : "find"](x => x.uid == uid)
+}
+
+function editProduct(data, db){
+    for(var u=0; u<db.users.length; u+=1){
+        if(data.token == db.users[u].token){
+            if(data.operation == "add"){
+                var newProduct = createProduct(data, db.users[u].username)
+                if(typeof newProduct == "string"){
+                    return newProduct
+                }else{
+                    newProduct.uid = db.nextProductId
+                    db.products.unshift(newProduct)
+                    db.users[u].products.unshift(db.nextProductId)
+
+                    db.nextProductId += 1
+                }
+
+            }else if(data.operation == "edit"){
+                editProductObject(getProductByUid(data.productId, db), data)
+            }else if(data.operation == "delete"){
+                db.products.splice(getProductByUid(data.productId, db, true), 1)
+                db.users[u].products.splice(db.users[u].products.findIndex(x => x == data.productId), 1)
+            }else{
+                return "invalid operation"
+            }
+            return false
+        }
+    }
+
+    return "you have no rights for that"
+}
+
+function searchProducts(data, db){
+    var list = []
+    db.products.forEach(product => {
+        var matches = false
+        if(data.searchData.author && !matches){
+            if(new RegExp(data.searchData.author).test(product.author)){
+                list.push(product)
+                matches = true;
+            }
+        }
+        if(data.searchData.tags && !matches){
+            if(data.searchData.tags.split(" ").every(tag => product.tags.includes(tag))){
+                list.push(product)
+                matches = true;
+            }
+        }
+        if(data.searchData.title && !matches){
+            if(new RegExp(data.searchData.title).test(product.title)){
+                list.push(product)
+                matches = true;
+            }
+        }
+        if(data.searchData.description && !matches){
+            if(new RegExp(data.searchData.description).test(product.description)){
+                list.push(product)
+                matches = true;
+            }
+        }
+    })
+    return list
 }
 
 export default function(app, jsonParser, db){
@@ -114,19 +226,79 @@ export default function(app, jsonParser, db){
         if(!req.body) return res.sendStatus(400)
 
         var data = req.body
-        var result = false
-
+        
         if(data.password == "001011"){
-            fs.writeFile('./local/db.json', JSON.stringify(db), 'utf8', function (err) {
-                if(err){
-                    return(console.log(err))
+            saveDb(db,
+                // success
+                function(){
+                    res.json({
+                        message: "successfully"
+                    })
+                },
+                // error
+                function(){
+                    res.json({
+                        message: "error: unable to save database"
+                    })
                 }
-                result = true;
-                console.log("database saved")
-                res.json({
-                    message: result ? "successfully" : "error"
-                })
-            })
+            )
         }
+    })
+
+    app.post("/edit-product", jsonParser, (req, res)=>{
+        if(!req.body) return res.sendStatus(400)
+
+        var result = editProduct(req.body, db)
+        
+        res.json({
+            message: !(result) ? "successfully" : result
+        })
+    })
+    
+    app.post("/get-products-list", jsonParser, (req, res)=>{
+        if(!req.body) return res.sendStatus(400)
+
+        var data = req.body
+
+        var result = []
+        for(var i=data.offset; i<Math.min(data.offset+data.count, db.products.length); i++){
+            result.push(db.products[i])
+        }
+        
+        res.json({
+            list: result
+        })
+    })
+
+    app.post("/get-my-products-list", jsonParser, (req, res)=>{
+        if(!req.body) return res.sendStatus(400)
+
+        var data = req.body
+        var result = []
+        var mes = "error"
+        for(var u=0; u<db.users.length; u+=1){
+            if(data.token == db.users[u].token){
+                for(var i=data.offset; i<Math.min(data.offset+data.count, db.users[u].products.length); i++){
+                    result.push(getProductByUid(db.users[u].products[i], db))
+                }
+                mes = "successfully"
+            }
+        }
+        
+        res.json({
+            message: mes,
+            list: result
+        })
+    })
+
+    app.post("/get-products-list-with-search", jsonParser, (req, res)=>{
+        if(!req.body) return res.sendStatus(400)
+
+        var data = req.body
+        var result = searchProducts(data, db)
+        
+        res.json({
+            list: result
+        })
     })
 }

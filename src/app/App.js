@@ -6,6 +6,8 @@ export default function App(){
     return(
         <Switch>
             <Route exact path="/" component={Home}/>
+            <Route exact path="/my-products" component={Home}/>
+            <Route exact path="/search" component={Home}/>
         </Switch>
     )
 }
