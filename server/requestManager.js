@@ -215,7 +215,7 @@ function searchProducts(data, db){
             matches = matches && new RegExp(data.searchData.title.toLowerCase()).test(product.title.toLowerCase())
         }
         if(data.searchData.description){
-            matches = matches && new RegExp(data.searchData.title).test(product.title)
+            matches = matches && new RegExp(data.searchData.description.toLowerCase()).test(product.description.toLowerCase())
         }
 
         if(matches){
