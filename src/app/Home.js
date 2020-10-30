@@ -468,7 +468,7 @@ class Home extends React.Component{
                         
                         [
                         <div className="header-item">
-                            <button className="header-item button outline" onClick={(e)=>{this.setState({signInForm:true})}}>Sign In</button>,
+                            <button className="header-item button outline" onClick={(e)=>{this.setState({signInForm:true})}}>Sign In</button>
                             <button className="header-item button" onClick={(e)=>{this.setState({signUpForm:true})}}>Sign Up</button>
                         </div>
                         ]

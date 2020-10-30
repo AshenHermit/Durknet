@@ -15,7 +15,7 @@ function generateToken(){
 
 function User(data){
     this.name = data.name
-    this.username = data.username
+    this.username = data.username.toLowerCase()
     this.password = data.password
     this.token = ""
     this.products = []
@@ -57,7 +57,7 @@ function Product(data, userId){
     this.uid = -1
     this.title = data.title
     this.description = data.description
-    this.tags = data.tags.split(" ")
+    this.tags = data.tags.toLowerCase().split(" ")
     this.image = data.imageUrl
     this.author = userId
 }
@@ -72,7 +72,7 @@ function createProduct(data, userId){
 function editProductObject(product, data){
     product.title = data.title
     product.description = data.description
-    product.tags = data.tags.split(" ")
+    product.tags = data.tags.toLowerCase().split(" ")
     product.image = data.imageUrl
 }
 
