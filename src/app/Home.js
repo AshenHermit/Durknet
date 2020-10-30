@@ -445,7 +445,7 @@ class Home extends React.Component{
         return (
             <div>
                 <Helmet>
-                    <title>Home page</title>
+                    <title>Durknet</title>
                     <meta name="description" content="Modern Web App"/>
                 </Helmet>
 
