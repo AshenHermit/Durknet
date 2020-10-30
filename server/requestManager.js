@@ -206,7 +206,9 @@ function searchProducts(data, db){
     var list = []
     db.products.forEach(product => {
         var matches = true
-
+        if(data.searchData.uid){
+            matches = matches && data.searchData.uid == product.uid
+        }
         if(data.searchData.author){
             matches = matches && new RegExp(data.searchData.author.toLowerCase()).test(product.author.toLowerCase())
         }

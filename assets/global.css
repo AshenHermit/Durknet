@@ -141,3 +141,7 @@ flex-wrap: wrap;
 margin-top: 4px;
 }
 .product .tag{display: block;margin-right: 10px;color: #6b6969;font-size: 0.8em;}
+
+.link{
+    cursor: pointer;
+}

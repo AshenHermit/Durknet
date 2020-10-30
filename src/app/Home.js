@@ -45,13 +45,17 @@ function getSearchData(){
     }
     return sData
 }
-function setSearchData(data){
+function getSearchLink(data){
     var keys = Object.keys(data)
     var params = ""
     keys.forEach(key => {
         if(data[key]!="") params += key + "=" + data[key] + ";"
     })
-    window.location.href = window.location.origin + "/search#" + encodeURIComponent(params)
+
+    return "/search#" + encodeURIComponent(params)
+}
+function setSearchData(data){
+    window.location.href = window.location.origin + getSearchLink(data)
 }
 
 class SignUpForm extends React.Component{
@@ -255,18 +259,15 @@ class Product extends React.Component{
     render(){
         return (
             <div className="product">
-                <div className="title">{this.props.product.title}</div>
+                <a href={getSearchLink({uid: this.props.product.uid})} className="title">{this.props.product.title}</a>
                 <div className="description">{this.props.product.description}</div>
-                <div className="tags">
-                    
-                </div>
                 <img className="image" src={this.props.product.image}/>
                 <div className="tag-container">
                 { this.props.product.tags.map((tag) => 
-                    <a href={"/search#"+encodeURIComponent("tags=" + tag + ";")} className="tag">{tag}</a>
+                    <a href={getSearchLink({tags: tag})} className="tag">{tag}</a>
                 ) }
                 </div>
-                <a href={"/search#"+encodeURIComponent("author=" + this.props.product.author + ";")} className="author">{this.props.product.author}</a>
+                <a href={getSearchLink({author: this.props.product.author})} className="author">{this.props.product.author}</a>
                 {
                     this.props.home.state.inEditMode ?
                     <button className="button form-button" onClick={this.onEditClick}>edit</button>
@@ -414,6 +415,10 @@ class Home extends React.Component{
 
         // loading products
         this.updateProducts()
+
+        window.addEventListener('hashchange', (function() {
+            this.updateProducts()
+        }).bind(this));
 
         // sign in
         if(getCookie("username")){
