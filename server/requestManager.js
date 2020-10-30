@@ -1,5 +1,8 @@
 import { type } from "os";
 
+var fetch = require('isomorphic-fetch'); // or another library of choice.
+var Dropbox = require('dropbox').Dropbox;
+
 const fs = require("fs");
 
 function generateToken(){
@@ -108,19 +111,58 @@ function userLogout(data, db){
     return null
 }
 
-function saveDb(db, callback, errorCallback){
+function loadDb(data, callback, errorCallback){
+    var dbx = new Dropbox({
+        accessToken:  data.accessToken, 
+        fetch: fetch
+    });
+    
+    dbx.filesDownload({path: '/db.json'})
+    .then(function(response) {
+        var encoded = new Buffer.from(response.result.fileBinary);
+        console.log("database loaded")
+        callback(JSON.parse(encoded.toString('utf8')))
+    })
+    .catch(function(err){
+        console.log(err)
+        errorCallback()
+    })
+}
+
+function saveDb(data, db, callback, errorCallback){
     var dbCopy = Object.assign({}, db)
 
     for(var i=0; i<dbCopy.users.length; i++){
         dbCopy.users[i].token = ""
     }
 
+    /*
     fs.writeFile('./local/db.json', JSON.stringify(dbCopy, 0, 4), 'utf8', function (err) {
         if(err){
             errorCallback()
             return(console.log(err))
         }
         callback()
+    })
+    */
+    var dbx = new Dropbox({
+        accessToken:  data.accessToken, 
+        fetch: fetch
+    });
+
+    dbx.filesUpload({
+        "path": "/db.json",
+        "contents": JSON.stringify(dbCopy, 0, 4),
+        "mode": {".tag": "overwrite"},
+        "autorename": false,
+        "mute": true,
+        "strict_conflict": false
+    }).then(function(req){
+        callback()
+    })
+    .catch(function(err){
+        console.log(err)
+        errorCallback()
     })
 }
 
@@ -226,13 +268,36 @@ export default function(app, jsonParser, db){
         })
     })
 
+    app.post("/load-db", jsonParser, (req, res)=>{
+        if(!req.body) return res.sendStatus(400)
+
+        var data = req.body
+        
+        if(getUserByToken(data.token, db).username == "ashen_hermit"){
+            loadDb(data,
+                // success
+                (function(newDb){
+                    db = newDb
+                    res.json({
+                        message: "successfully"
+                    })
+                }).bind(db),
+                // error
+                function(){
+                    res.json({
+                        message: "error: unable to load database"
+                    })
+                }
+            )
+        }
+    })
     app.post("/save-db", jsonParser, (req, res)=>{
         if(!req.body) return res.sendStatus(400)
 
         var data = req.body
         
-        if(getUserByToken(data.token).username == "ashen_hermit"){
-            saveDb(db,
+        if(getUserByToken(data.token, db).username == "ashen_hermit"){
+            saveDb(data, db,
                 // success
                 function(){
                     res.json({
