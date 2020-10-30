@@ -278,7 +278,7 @@ export default function(app, jsonParser, db){
         var data = req.body
         
         if(getUserByToken(data.token, db).username == "ashen_hermit"){
-            loadDb(data,
+            loadDb({accessToken: process.env.DBX_ACCESS_TOKEN},
                 // success
                 (function(newDb){
                     db = newDb
@@ -301,7 +301,7 @@ export default function(app, jsonParser, db){
         var data = req.body
         
         if(getUserByToken(data.token, db).username == "ashen_hermit"){
-            saveDb(data, db,
+            saveDb({accessToken: process.env.DBX_ACCESS_TOKEN}, db,
                 // success
                 function(){
                     res.json({
