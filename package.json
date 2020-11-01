@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "npm run pack && npm run startProd",
-    "startProd": "node index.js",
+    "startProd": "npm run pack && npm run start",
+    "start": "node index.js",
     "pack": "webpack --mode production --config webpack.config.js",
     "startDev": "npm run packDev && node index.js",
     "packDev": "webpack --mode development --config webpack.config.js"
